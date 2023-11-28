@@ -1,43 +1,11 @@
-import * as contactService from "../models/contacts.js";
-import { contactSchema } from '../schemas/validation.js';
-import { HttpError } from "../helpers/httpError.js";
+import { ctrlWrapper } from "../decorators/index.js";
+import { HttpError } from "../helpers/index.js";
+import Contact from "../models/Contact.js"
 
 const getAll = async (req, res, next) => {
     try {
-        const result = await contactService.listContacts();
+        const result = await Contact.find({}, "-createdAt -updatedAt");
         res.json(result);
-    }
-    catch (error) {
-        next(error);
-    }
-}
-
-const getById = async (req, res, next) => {
-    try {
-        console.log(req.params);
-        const { id } = req.params;
-        const result = await contactService.getContactById(id);
-        if (!result) {
-            throw HttpError(404, `Movie with id=${id} not found`);
-        }
-        res.json(result);
-    }
-    catch (error) {
-        next(error);
-    }
-}
-
-const deleteById = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const result = await contactService.removeContact(id);
-        if (!result) {
-            throw HttpError(404, `Contact with id=${id} not found`);
-        }
-
-        res.json({
-            message: "Delete success"
-        })
     }
     catch (error) {
         next(error);
@@ -45,49 +13,89 @@ const deleteById = async (req, res, next) => {
 }
 
 const addContact = async (req, res, next) => {
-    try {
-        const { body } = req;
 
-        const { error } = contactSchema.validate(body);
+    const result = await Contact.create(req.body);
+    res.status(201).json(result);
 
-        if (error) {
-            throw HttpError(400, `Mistake of validation: ${error.details[0].message}`);
-        }
-
-        const result = await contactService.addContact(body);
-        res.status(201).json(result);
-    } catch (error) {
-        next(error);
-    }
 }
 
-const updateById = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const { body } = req;
-
-        const { error } = contactSchema.validate(body);
-
-        if (error) {
-            throw HttpError(400, `Mistake of validation: ${error.details[0].message}`);
-        }
-
-        const result = await contactService.updateContact(id, body);
-
-        if (!result) {
-            throw new HttpError(404, `Contact with id=${id} not found`);
-        }
-
-        res.json(result);
-    } catch (error) {
-        next(error);
+const getById = async (req, res) => {
+    const { id } = req.params;
+    const result = await Contact.findById(id);
+    if (!result) {
+        throw HttpError(404, `Contact with id=${id} not found`);
     }
+    res.json(result);
 }
+
+const deleteById = async (req, res) => {
+    const { id } = req.params;
+    const result = await Contact.findByIdAndDelete(id);
+    if (!result) {
+        throw HttpError(404, `Contact with id=${id} not found`);
+    }
+    res.json({
+        message: "Delete success"
+    })
+}
+
+const updateById = async (req, res) => {
+    const { id } = req.params;
+    const result = await Contact.findByIdAndUpdate(id, req.body);
+    if (!result) {
+        throw HttpError(404, `Contact with id=${id} not found`);
+    }
+
+    res.json(result);
+}
+
+const updateFavoriteStatus = async (req, res, next) => {
+    try {
+        const { id: contactId } = req.params;
+        const { favorite } = req.body;
+
+        if (favorite === undefined) {
+            throw HttpError(400, 'Missing field "favorite"');
+        }
+
+        const updatedContact = await updateStatusContact(contactId, { favorite });
+
+        res.status(200).json(updatedContact);
+    } catch (error) {
+        console.error(error);
+        if (error.jsonMessage) {
+            res.status(error.status).json(error.jsonMessage);
+        } else {
+            next(error);
+        }
+    }
+};
+
+const updateStatusContact = async (contactId, body) => {
+    try {
+        const contact = await Contact.findById(contactId);
+
+        if (!contact) {
+            throw HttpError(404, `Contact with id=${contactId} not found`);
+        }
+
+        // Оновлення лише поля 'favorite' з тіла запиту
+        contact.favorite = body.favorite;
+
+        // Збереження оновленого контакту
+        const updatedContact = await contact.save();
+
+        return updatedContact;
+    } catch (error) {
+        throw HttpError(500, 'Internal Server Error');
+    }
+};
 
 export default {
-    getAll,
-    getById,
-    deleteById,
-    addContact,
-    updateById,
+    getAll: ctrlWrapper(getAll),
+    getById: ctrlWrapper(getById),
+    addContact: ctrlWrapper(addContact),
+    updateById: ctrlWrapper(updateById),
+    deleteById: ctrlWrapper(deleteById),
+    updateFavoriteStatus,
 }
