@@ -2,7 +2,7 @@ import express from "express";
 
 import * as contactsController from "../../controllers/index.js";
 
-import { isEmptyBody, isValidId } from "../../middlewares/index.js";
+import { authenticate, isEmptyBody, isValidId } from "../../middlewares/index.js";
 
 import { validateBody } from "../../decorators/index.js";
 
@@ -10,6 +10,8 @@ import { contactAddSchema, contactUpdateSchema, contactFavoriteSchema } from "..
 
 
 const contactsRouter = express.Router();
+
+contactsRouter.use(authenticate);
 
 contactsRouter.get("/", contactsController.getAll);
 
