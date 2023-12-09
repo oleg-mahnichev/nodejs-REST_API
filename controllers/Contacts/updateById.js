@@ -1,4 +1,4 @@
-import { HttpError } from "../helpers/index.js";
+import { HttpError } from "../../helpers/index.js";
 
 const updateById = async (req, res) => {
     const { id } = req.params;

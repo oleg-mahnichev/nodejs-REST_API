@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import { handleSaveError, preUpdate } from "./hooks.js";
+import gravatar from "gravatar";
 import Joi from "joi";
 
 const emailRegexp = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
@@ -21,9 +22,23 @@ const userSchema = new Schema(
             enum: ["starter", "pro", "business"],
             default: "starter"
         },
+        avatarURL: {
+            type: String,
+        },
         token: String
     },
     { versionKey: false, timestamps: true });
+
+userSchema.pre("save", function (next) {
+    if (this.isModified("email")) {
+        this.avatarURL = gravatar.url(this.email, {
+            s: "200",
+            r: "pg",
+            d: "identicon",
+        });
+    }
+    next();
+});
 
 userSchema.post("save", handleSaveError);
 

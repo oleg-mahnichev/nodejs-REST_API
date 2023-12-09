@@ -1,5 +1,5 @@
-import { HttpError } from "../helpers/index.js";
-import Contact from "../models/Contact.js"
+import { HttpError } from "../../helpers/index.js";
+import Contact from "../../models/Contact.js"
 
 
 const getById = async (req, res) => {

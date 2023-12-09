@@ -1,6 +1,6 @@
 import express from "express";
 
-import * as contactsController from "../../controllers/index.js";
+import * as contactsController from "../../controllers/Contacts/index.js";
 
 import { authenticate, isEmptyBody, isValidId } from "../../middlewares/index.js";
 
