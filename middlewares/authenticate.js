@@ -29,7 +29,7 @@ const authenticate = async (req, res, next) => {
 
         if (!user || !user.token || user.token !== token) {
             console.log('User not found');
-            return next(new HttpError(401, 'User not found'));
+            return next(new HttpError(401, 'User not authorized'));
         }
 
         req.user = user;
