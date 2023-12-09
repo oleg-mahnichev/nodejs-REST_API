@@ -7,7 +7,7 @@ const updateFavoriteStatus = async (req, res, next) => {
         const { favorite } = req.body;
 
         if (favorite === undefined) {
-            throw HttpError(400, 'Missing field "favorite"');
+            throw new HttpError(400, 'Missing field "favorite"');
         }
 
         const updatedContact = await updateStatusContact(contactId, { favorite });
@@ -28,7 +28,7 @@ const updateStatusContact = async (contactId, body) => {
         const contact = await Contact.findById(contactId);
 
         if (!contact) {
-            throw HttpError(404, `Contact with id=${contactId} not found`);
+            throw new HttpError(404, `Contact with id=${contactId} not found`);
         }
 
         // Оновлення лише поля 'favorite' з тіла запиту
@@ -39,7 +39,7 @@ const updateStatusContact = async (contactId, body) => {
 
         return updatedContact;
     } catch (error) {
-        throw HttpError(500, 'Internal Server Error');
+        throw new HttpError(500, 'Internal Server Error');
     }
 };
 
