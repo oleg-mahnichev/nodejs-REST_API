@@ -1,5 +1,5 @@
-import Contact from "../models/Contact.js"
-import { HttpError } from "../helpers/index.js";
+import Contact from "../../models/Contact.js"
+import { HttpError } from "../../helpers/index.js";
 
 const addContact = async (req, res, next) => {
     if (!req.user) {

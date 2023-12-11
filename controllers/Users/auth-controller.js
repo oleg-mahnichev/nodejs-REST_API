@@ -1,24 +1,41 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import "dotenv/config.js";
+import gravatar from "gravatar";
 
+import User from "../../models/user.js";
 
-import User from "../models/user.js";
-
-import { ctrlWrapper } from "../decorators/index.js";
-import { HttpError } from "../helpers/index.js";
+import { ctrlWrapper } from "../../decorators/index.js";
+import { HttpError } from "../../helpers/index.js";
 
 const { JWT_SECRET } = process.env;
 
 const register = async (req, res, next) => {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (user) {
-        next(new HttpError(409, 'Email in use'))
-    } else {
+
+    try {
+        const user = await User.findOne({ email });
+
+        if (user) {
+            return next(new HttpError(409, 'Email in use'));
+        }
+
+        const avatarURL = gravatar.url(email, { s: '200', r: 'pg', d: 'identicon' });
         const hashPassword = await bcrypt.hash(password, 10);
-        const newUser = await User.create({ ...req.body, password: hashPassword });
-        res.status(201).json({ usename: newUser.username, email: newUser.email, subscription: newUser.subscription });
+        const newUser = await User.create({
+            ...req.body,
+            password: hashPassword,
+            avatarURL: avatarURL,
+        });
+
+        res.status(201).json({
+            email: newUser.email,
+            subscription: newUser.subscription,
+            avatarURL: newUser.avatarURL,
+        });
+    } catch (error) {
+        console.error('Error during user registration:', error);
+        next(new HttpError(500, 'Internal Server Error'));
     }
 };
 

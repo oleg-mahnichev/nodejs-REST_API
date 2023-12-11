@@ -1,5 +1,5 @@
-import { HttpError } from "../helpers/index.js";
-import Contact from "../models/Contact.js"
+import { HttpError } from "../../helpers/index.js";
+import Contact from "../../models/Contact.js"
 
 const updateFavoriteStatus = async (req, res, next) => {
     try {
