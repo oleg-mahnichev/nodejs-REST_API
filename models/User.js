@@ -13,7 +13,7 @@ const userSchema = new Schema(
         },
         email: {
             type: String,
-            // match: emailRegexp,
+            match: emailRegexp,
             unique: true,
             required: true,
         },
@@ -23,6 +23,13 @@ const userSchema = new Schema(
             default: "starter"
         },
         avatarURL: {
+            type: String,
+        },
+        verify: {
+            type: Boolean,
+            default: false,
+        },
+        verificationToken: {
             type: String,
         },
         token: String
@@ -55,6 +62,13 @@ export const userSigninSchema = Joi.object({
     email: Joi.string().pattern(emailRegexp).required(),
     password: Joi.string().min(6).required(),
 })
+
+export const userEmailSchema = Joi.object({
+    email: Joi.string().required().pattern(emailRegexp).messages({
+        "any.required": "missing required field 'email'",
+        "string.pattern.base": "'email' must be valid e-mail",
+    }),
+});
 
 const User = model("user", userSchema);
 
